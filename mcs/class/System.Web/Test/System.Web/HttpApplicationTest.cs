@@ -12,10 +12,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,11 +28,13 @@
 using System;
 using System.Web;
 using System.Web.Caching;
+using System.Web.Configuration;
+using static System.Web.HttpApplication;
 
 using NUnit.Framework;
 using MonoTests.Common;
 
-namespace MonoTests.System.Web
+namespace MonoTests
 {
 	[TestFixture]
 	public class HttpApplicationTest
@@ -46,5 +48,29 @@ namespace MonoTests.System.Web
 			Assert.AreEqual ("AspNetInternalProvider", app.GetOutputCacheProviderName (null), "#A1");
 		}
 #endif
+
+		[Test]
+		public void ModuleIsRegistered()
+		{
+			var httpApp = new HttpApplication();
+			var str = "blah";
+			HttpApplication.RegisterModule(str.GetType());
+			var cfg = WebConfigurationManager.GetWebApplicationSection ("system.web/httpModules") as HttpModulesSection;
+			foreach (HttpModuleAction module in cfg.Modules)
+			{
+				if (module.Name.Contains("__Dynamic_Module_System.String") && module.Type.Contains("System.String"))
+					return;
+			}
+			Assert.Fail("Module not added to the config.");
+		}
+
+		[Test]
+		public void RegisterModuleFailsGracefully()
+		{
+			var httpApp = new HttpApplication();
+			HttpApplication.RegisterModule(null);
+			var cfg = WebConfigurationManager.GetWebApplicationSection ("system.web/httpModules") as HttpModulesSection;
+		}
+
 	}
 }

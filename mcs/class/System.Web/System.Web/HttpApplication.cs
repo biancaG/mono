@@ -79,8 +79,8 @@ using System.Web.Management;
 using System.Web.SessionState;
 using System.Web.UI;
 using System.Web.Util;
+using System.Security;
 
-	
 namespace System.Web
 {
 	// CAS
@@ -184,7 +184,18 @@ namespace System.Web
 		{
 			done = new ManualResetEvent (false);
 		}
-		
+
+		[SecuritySafeCritical]
+		public static void RegisterModule (Type moduleType)
+		{
+			if (moduleType == null)
+				return;
+
+			string typeName = moduleType.AssemblyQualifiedName;
+			var cfg = WebConfigurationManager.GetWebApplicationSection ("system.web/httpModules") as HttpModulesSection;
+			cfg.Modules.Add (new HttpModuleAction ("__Dynamic_Module_" + typeName, typeName));
+		}
+
 		internal void InitOnce (bool full_init)
 		{
 			if (initialization_exception != null)

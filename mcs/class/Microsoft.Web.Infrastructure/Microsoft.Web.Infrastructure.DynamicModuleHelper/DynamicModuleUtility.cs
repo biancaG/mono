@@ -29,7 +29,6 @@ using System;
 using System.ComponentModel;
 using System.Security;
 using System.Web;
-using System.Web.Configuration;
 
 namespace Microsoft.Web.Infrastructure.DynamicModuleHelper
 {
@@ -39,12 +38,7 @@ namespace Microsoft.Web.Infrastructure.DynamicModuleHelper
 		[SecuritySafeCritical]
 		public static void RegisterModule (Type moduleType)
 		{
-			if (moduleType == null)
-				return;
-
-			string typeName = moduleType.AssemblyQualifiedName;
-			var cfg = WebConfigurationManager.GetWebApplicationSection ("system.web/httpModules") as HttpModulesSection;
-			cfg.Modules.Add (new HttpModuleAction ("__Dynamic_Module_" + typeName, typeName));
+			HttpApplication.RegisterModule(moduleType);
 		}
 	}
 }
